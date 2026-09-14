@@ -1,0 +1,15 @@
+# Local toolchains and transient unpack/build directories
+.tools/
+.tmp/
+temp_epf/
+
+# Known-bad release retained locally only for diagnosis
+dist/*_1.1.0.cfe
+
+# Editor and operating-system files
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp
