@@ -17,18 +17,18 @@ function Normalize-Module([string]$Text) {
     return $Text.TrimStart([char]0xFEFF).Replace("`r`n", "`n").TrimEnd("`r", "`n")
 }
 
-$relative = 'DataProcessor\Расш1_АудитСебестоимости\Form\Форма'
+$relative = 'DataProcessor\ИСС_АудитСебестоимости\Form\ИСС_ФормаАудитаСебестоимости'
 $module = Get-Content -LiteralPath (Join-Path $Source "$relative\Form.obj.bsl") -Raw -Encoding UTF8
 $decoded = Get-Content -LiteralPath (Join-Path $RoundTrip "$relative\Form.obj.bsl") -Raw -Encoding UTF8
 Check ((Normalize-Module $module) -ceq (Normalize-Module $decoded)) 'BSL module round-trip equality'
 
 $cfg = Get-Content -LiteralPath (Join-Path $RoundTrip 'ConfigurationExtension.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-Check ($cfg.name -eq 'АудитСебестоимости') 'Extension name'
+Check ($cfg.name -eq 'ИСС_АудитСебестоимости') 'Unique extension name'
 Check ($cfg.name2.ru -eq 'Аудит и восстановление себестоимости') 'Extension synonym'
 Check ($cfg.compatibility_version -eq '80327') 'Compatibility 8.3.27'
 
 $version = (Get-Content -LiteralPath (Join-Path $RoundTrip 'version.bin') -Raw -Encoding UTF8).Trim()
-Check ($version -eq '1.1.1') 'Binary version 1.1.1'
+Check ($version -eq '1.1.2') 'Binary version 1.1.2'
 
 $dirs = @(Get-ChildItem -LiteralPath $RoundTrip -Directory | Select-Object -ExpandProperty Name | Sort-Object)
 Check (($dirs -join ',') -eq 'DataProcessor,Language,Role,Subsystem') 'Only required metadata types'
@@ -57,6 +57,7 @@ $roundTripText = (Get-ChildItem -LiteralPath $RoundTrip -Recurse -File |
     Where-Object Extension -in '.json', '.c1brace' |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 }) -join "`n"
 Check (-not ($donorObjectIds | Where-Object { $roundTripText.Contains($_) })) 'No object or internal UUID collisions with donor extension'
+Check (-not $roundTripText.Contains('Расш1_')) 'No donor metadata prefix remains'
 
 $objectIds = [System.Collections.Generic.List[string]]::new()
 Get-ChildItem -LiteralPath $RoundTrip -Recurse -Filter '*.id.json' -File | ForEach-Object {
@@ -67,10 +68,16 @@ Get-ChildItem -LiteralPath $RoundTrip -Recurse -Filter '*.id.json' -File | ForEa
 }
 Check ($objectIds.Count -eq @($objectIds | Sort-Object -Unique).Count) 'Extension object UUIDs are unique'
 
-$processor = Get-Content -LiteralPath (Join-Path $RoundTrip 'DataProcessor\Расш1_АудитСебестоимости\DataProcessor.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-Check ($processor.name -eq 'Расш1_АудитСебестоимости') 'Data processor uses extension prefix'
-$subsystem = Get-Content -LiteralPath (Join-Path $RoundTrip 'Subsystem\Расш1_АудитСебестоимости\Subsystem.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$processor = Get-Content -LiteralPath (Join-Path $RoundTrip 'DataProcessor\ИСС_АудитСебестоимости\DataProcessor.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+Check ($processor.name -eq 'ИСС_АудитСебестоимости') 'Unique data processor name'
+$subsystem = Get-Content -LiteralPath (Join-Path $RoundTrip 'Subsystem\ИСС_АудитСебестоимости\Subsystem.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 Check ($subsystem.name2.ru -eq 'Аудит себестоимости') 'Subsystem presentation'
+$role = Get-Content -LiteralPath (Join-Path $RoundTrip 'Role\ИСС_ОсновнаяРольАудитаСебестоимости\Role.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+Check ($role.name -eq 'ИСС_ОсновнаяРольАудитаСебестоимости') 'Unique main role name'
+$language = Get-Content -LiteralPath (Join-Path $RoundTrip 'Language\ИСС_Русский\Language.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+Check ($language.name -eq 'ИСС_Русский') 'Unique language name'
+$formMetadata = Get-Content -LiteralPath (Join-Path $RoundTrip "$relative\Form.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+Check ($formMetadata.name -eq 'ИСС_ФормаАудитаСебестоимости') 'Unique form name'
 
 $form = Get-Content -LiteralPath (Join-Path $RoundTrip "$relative\Form.elem.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 Check ($form.props.Count -eq 1 -and $form.props[0].name -eq 'Объект') 'No legacy form attributes'
@@ -83,6 +90,7 @@ Check ($module.Contains('ПроверитьПродажи')) 'Sales cost audit'
 Check ($module.Contains('Повторные проблемы одной позиции не скрываются')) 'Repeated issues are preserved'
 Check ($module.Contains('АС_Номенклатура')) 'Optional item filter'
 Check ($module.Contains('ПроверитьСтруктуруНаСервере')) 'UNF metadata diagnostics'
+Check ($module.Contains('ЭтаФорма.Команды.Добавить(ИмяКоманды)')) 'Form commands use contextual form collection'
 
 Check ($module.Contains('Документы.Проведен = ИСТИНА')) 'Plan contains posted documents'
 Check ($module.Contains('Для Каждого МетаДокумента Из Метаданные.Документы')) 'Plan covers every document type'
