@@ -28,7 +28,7 @@ Check ($cfg.name2.ru -eq 'Аудит и восстановление себес�
 Check ($cfg.compatibility_version -eq '80327') 'Compatibility 8.3.27'
 
 $version = (Get-Content -LiteralPath (Join-Path $RoundTrip 'version.bin') -Raw -Encoding UTF8).Trim()
-Check ($version -eq '1.1.5') 'Binary version 1.1.5'
+Check ($version -eq '1.1.6') 'Binary version 1.1.6'
 
 $dirs = @(Get-ChildItem -LiteralPath $RoundTrip -Directory | Select-Object -ExpandProperty Name | Sort-Object)
 Check (($dirs -join ',') -eq 'DataProcessor,Language,Role,Subsystem') 'Only required metadata types'
@@ -101,7 +101,10 @@ Check ($module.Contains('Символы.ПС + "УПОРЯДОЧИТЬ ПО Да
 Check ($module.Contains('Символы.ПС + "УПОРЯДОЧИТЬ ПО Продажи.Период"')) 'Dynamic sales query ordering is valid'
 
 Check ($module.Contains('Документы.Проведен = ИСТИНА')) 'Plan contains posted documents'
-Check ($module.Contains('Для Каждого МетаДокумента Из Метаданные.Документы')) 'Plan covers every document type'
+Check ($module.Contains('Для Каждого МетаДокумента Из Метаданные.Документы')) 'Plan inspects every document type'
+Check ($module.Contains('Функция ЭтоЗаказПокупателя')) 'Customer order exclusion is centralized'
+Check ($module.Contains('Исключено заказов покупателей:')) 'Plan reports excluded customer orders'
+Check ($module.Contains('ЭтоЗаказПокупателя(ОписаниеДокумента.ВидДокумента)')) 'Execution guard skips customer orders'
 Check ($module.Contains('ТаблицаПлана.Сортировать("Момент Возр")')) 'Plan is chronological by moment in time'
 Check ($module.Contains('РежимПроведенияДокумента.Неоперативный')) 'Non-operational reposting'
 Check ($module.Contains('ПерепровестиПакетНаСервере(АдресПлана, СостояниеПерепроведения.Индекс, 10)')) 'Batch size 10'
