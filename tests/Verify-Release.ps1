@@ -28,7 +28,7 @@ Check ($cfg.name2.ru -eq 'Аудит и восстановление себес�
 Check ($cfg.compatibility_version -eq '80327') 'Compatibility 8.3.27'
 
 $version = (Get-Content -LiteralPath (Join-Path $RoundTrip 'version.bin') -Raw -Encoding UTF8).Trim()
-Check ($version -eq '1.1.2') 'Binary version 1.1.2'
+Check ($version -eq '1.1.3') 'Binary version 1.1.3'
 
 $dirs = @(Get-ChildItem -LiteralPath $RoundTrip -Directory | Select-Object -ExpandProperty Name | Sort-Object)
 Check (($dirs -join ',') -eq 'DataProcessor,Language,Role,Subsystem') 'Only required metadata types'
@@ -91,6 +91,8 @@ Check ($module.Contains('Повторные проблемы одной пози
 Check ($module.Contains('АС_Номенклатура')) 'Optional item filter'
 Check ($module.Contains('ПроверитьСтруктуруНаСервере')) 'UNF metadata diagnostics'
 Check ($module.Contains('ЭтаФорма.Команды.Добавить(ИмяКоманды)')) 'Form commands use contextual form collection'
+Check ($module.Contains('Функция АбсолютноеЗначение(Значение)')) 'Portable absolute value helper'
+Check (-not $module.Contains('Абс(')) 'No unavailable Abs function calls'
 
 Check ($module.Contains('Документы.Проведен = ИСТИНА')) 'Plan contains posted documents'
 Check ($module.Contains('Для Каждого МетаДокумента Из Метаданные.Документы')) 'Plan covers every document type'
