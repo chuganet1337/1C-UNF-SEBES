@@ -28,7 +28,7 @@ Check ($cfg.name2.ru -eq 'Аудит и восстановление себес�
 Check ($cfg.compatibility_version -eq '80327') 'Compatibility 8.3.27'
 
 $version = (Get-Content -LiteralPath (Join-Path $RoundTrip 'version.bin') -Raw -Encoding UTF8).Trim()
-Check ($version -eq '1.1.4') 'Binary version 1.1.4'
+Check ($version -eq '1.1.5') 'Binary version 1.1.5'
 
 $dirs = @(Get-ChildItem -LiteralPath $RoundTrip -Directory | Select-Object -ExpandProperty Name | Sort-Object)
 Check (($dirs -join ',') -eq 'DataProcessor,Language,Role,Subsystem') 'Only required metadata types'
@@ -96,6 +96,9 @@ Check (-not $module.Contains('Абс(')) 'No unavailable Abs function calls'
 $clientVariables = [regex]::Matches($module, '(?m)^&НаКлиенте\r?\nПерем [А-Яа-яA-Za-z0-9_]+;$')
 Check ($clientVariables.Count -eq 9) 'Every client form variable has its own compilation directive'
 Check ($module.Contains('Функция ПолучитьТекущуюДатуСеансаНаСервере()')) 'Server wrapper for current session date'
+Check (-not $module.Contains('Символы.ПС + "|')) 'Dynamic query fragments contain no multiline source marker'
+Check ($module.Contains('Символы.ПС + "УПОРЯДОЧИТЬ ПО Данные.Период"')) 'Dynamic inventory query ordering is valid'
+Check ($module.Contains('Символы.ПС + "УПОРЯДОЧИТЬ ПО Продажи.Период"')) 'Dynamic sales query ordering is valid'
 
 Check ($module.Contains('Документы.Проведен = ИСТИНА')) 'Plan contains posted documents'
 Check ($module.Contains('Для Каждого МетаДокумента Из Метаданные.Документы')) 'Plan covers every document type'
